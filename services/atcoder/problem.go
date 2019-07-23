@@ -2,9 +2,15 @@ package atcoder
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"net/http"
 	"net/url"
 	"regexp"
 
+	"github.com/grassedge/go-online-judge-tools/types"
+	"github.com/grassedge/go-online-judge-tools/utils"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/PuerkitoBio/purell"
 )
 
@@ -36,6 +42,20 @@ func NewAtCoderProblemFromUrl(u *url.URL) (*AtCoderProblem, error) {
 	}, nil
 }
 
+func (p *AtCoderProblem) DownloadContent() *AtCoderProblemContent {
+	resp, err := http.Get(p.GetUrl())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	return NewAtCoderProblemContentFromHTML(resp.Body, p)
+}
+
+func (p *AtCoderProblem) DownloadSampleCases() []*types.TestCase {
+	return p.DownloadContent().sampleCases
+}
+
 func (p *AtCoderProblem) GetUrl() string {
 	url := fmt.Sprintf("https://atcoder.jp/contests/%s/tasks/%s", p.ContestId, p.ProblemId)
 	if p.lang != "" {
@@ -52,4 +72,30 @@ func (p *AtCoderProblem) GetContest() *AtCoderContest {
 	return &AtCoderContest{
 		ContestId: p.ContestId,
 	}
+}
+
+type AtCoderProblemContent struct {
+	sampleCases []*types.TestCase
+	problem *AtCoderProblem
+}
+
+func NewAtCoderProblemContentFromHTML(html io.Reader, problem *AtCoderProblem) *AtCoderProblemContent {
+	doc, err := goquery.NewDocumentFromReader(html)
+	if err != nil {
+		log.Fatal(err)
+	}
+	sampleCases := parseAtCoderProblemContentSampleCases(doc)
+	// TODO: parse other content
+	return &AtCoderProblemContent{
+		sampleCases: sampleCases,
+		problem: problem,
+	}
+}
+
+func parseAtCoderProblemContentSampleCases(doc *goquery.Document) []*types.TestCase {
+	zipper := utils.NewSampleZipper()
+	doc.Find("h3+pre").Each(func(i int, s *goquery.Selection) {
+		zipper.Add(s.Text(), s.Prev().Text())
+	})
+	return zipper.Get()
 }
