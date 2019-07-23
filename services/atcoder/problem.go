@@ -1,31 +1,17 @@
 package atcoder
 
 import (
+	"fmt"
 	"net/url"
 	"regexp"
 
 	"github.com/PuerkitoBio/purell"
 )
 
-type AtCoderProblemType int
-const (
-	Default AtCoderProblemType = iota
-	Beta
-	Old
-)
 type AtCoderProblem struct {
 	ContestId string
 	ProblemId string
-	problemType AtCoderProblemType
 	lang string
-}
-
-type option func (p *AtCoderProblem) error
-func Type(t AtCoderProblemType) option {
-	return func (p *AtCoderProblem) error {
-		p.problemType = t
-		return nil
-	}
 }
 
 func NewAtCoderProblemFromUrl(u *url.URL) (*AtCoderProblem, error) {
@@ -47,6 +33,23 @@ func NewAtCoderProblemFromUrl(u *url.URL) (*AtCoderProblem, error) {
 	return &AtCoderProblem{
 		ContestId: contestId,
 		ProblemId: problemId, // NOTE: AtCoder calls this as "task_screen_name"
-		problemType: Default,
 	}, nil
+}
+
+func (p *AtCoderProblem) GetUrl() string {
+	url := fmt.Sprintf("https://atcoder.jp/contests/%s/tasks/%s", p.ContestId, p.ProblemId)
+	if p.lang != "" {
+		url += fmt.Sprintf("?lang=%s", p.lang)
+	}
+	return url
+}
+
+func (p *AtCoderProblem) GetService() *AtCoderService {
+	return &AtCoderService{}
+}
+
+func (p *AtCoderProblem) GetContest() *AtCoderContest {
+	return &AtCoderContest{
+		ContestId: p.ContestId,
+	}
 }
