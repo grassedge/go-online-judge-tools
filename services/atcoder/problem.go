@@ -94,7 +94,7 @@ func NewAtCoderProblemContentFromHTML(html io.Reader, problem *AtCoderProblem) *
 
 func parseAtCoderProblemContentSampleCases(doc *goquery.Document) []*types.TestCase {
 	zipper := utils.NewSampleZipper()
-	doc.Find("h3+pre").Each(func(i int, s *goquery.Selection) {
+	doc.Find(".lang-ja h3+pre").Each(func(i int, s *goquery.Selection) {
 		zipper.Add(s.Text(), s.Prev().Text())
 	})
 	return zipper.Get()
