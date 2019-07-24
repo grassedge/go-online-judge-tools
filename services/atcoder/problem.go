@@ -97,5 +97,8 @@ func parseAtCoderProblemContentSampleCases(doc *goquery.Document) []*types.TestC
 	doc.Find(".lang-ja h3+pre").Each(func(i int, s *goquery.Selection) {
 		zipper.Add(s.Text(), s.Prev().Text())
 	})
+	doc.Find(".prettyprint").Each(func(i int, s *goquery.Selection) {
+		zipper.Add(s.Text(), s.Parent().Prev().Text())
+	})
 	return zipper.Get()
 }
