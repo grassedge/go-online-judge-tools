@@ -11,17 +11,6 @@ import (
 	"os"
 )
 
-var CommandDownload = cli.Command{
-	Name: "download",
-	Usage: "Download online judge problems",
-	Description: `
-`,
-	Action: doDownload,
-	Flags: []cli.Flag{
-		cli.StringFlag{Name: "directory, dir, d", Usage: "..."},
-	},
-}
-
 func doDownload(c *cli.Context) error {
 	urlStr := c.Args().First()
 	directory := c.String("directory")
